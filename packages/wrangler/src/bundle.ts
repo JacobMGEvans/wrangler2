@@ -62,6 +62,7 @@ export async function bundleWorker(
 		nodeCompat: boolean | undefined;
 		define: Config["define"];
 		checkFetch: boolean;
+		firstPartyWorkerDevFacade: boolean | undefined;
 	}
 ): Promise<BundleResult> {
 	const {
@@ -74,6 +75,7 @@ export async function bundleWorker(
 		minify,
 		nodeCompat,
 		checkFetch,
+		firstPartyWorkerDevFacade,
 	} = options;
 
 	// We create a temporary directory for any oneoff files we
@@ -136,7 +138,11 @@ export async function bundleWorker(
 			((currentEntry: Entry) => {
 				return applyFormatDevErrorsFacade(currentEntry, tmpDir.path);
 			}),
-	].filter((x) => x !== false);
+		firstPartyWorkerDevFacade === true &&
+			((currentEntry: Entry) => {
+				return applyFirstPartyWorkerDevFacade(currentEntry, tmpDir.path);
+			}),
+	].filter(Boolean);
 
 	let inputEntry = entry;
 
@@ -299,6 +305,39 @@ async function applyStaticAssetFacade(
 				__ENTRY_POINT__: entry.file,
 				__KV_ASSET_HANDLER__: path.join(__dirname, "../kv-asset-handler.js"),
 				__STATIC_CONTENT_MANIFEST: "__STATIC_CONTENT_MANIFEST",
+			}),
+		],
+		outfile: targetPath,
+	});
+
+	return {
+		...entry,
+		file: targetPath,
+	};
+}
+
+async function applyFirstPartyWorkerDevFacade(
+	entry: Entry,
+	tmpDirPath: string
+) {
+	const targetPath = path.join(
+		tmpDirPath,
+		"first-party-worker-module-facade.entry.js"
+	);
+
+	await esbuild.build({
+		entryPoints: [
+			path.resolve(
+				__dirname,
+				"../templates/first-party-worker-module-facade.ts"
+			),
+		],
+		bundle: true,
+		format: "esm",
+		sourcemap: true,
+		plugins: [
+			esbuildAliasExternalPlugin({
+				__ENTRY_POINT__: entry.file,
 			}),
 		],
 		outfile: targetPath,
