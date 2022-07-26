@@ -24,6 +24,7 @@ export function useEsbuild({
 	jsxFragment,
 	rules,
 	serveAssetsFromWorker,
+	formatErrorsInDev,
 	tsconfig,
 	minify,
 	nodeCompat,
@@ -37,6 +38,7 @@ export function useEsbuild({
 	rules: Config["rules"];
 	define: Config["define"];
 	serveAssetsFromWorker: boolean;
+	formatErrorsInDev: boolean;
 	tsconfig: string | undefined;
 	minify: boolean | undefined;
 	nodeCompat: boolean | undefined;
@@ -85,6 +87,7 @@ export function useEsbuild({
 				  }
 				: await bundleWorker(entry, destination, {
 						serveAssetsFromWorker,
+						formatErrorsInDev,
 						jsxFactory,
 						jsxFragment,
 						rules,
@@ -138,6 +141,7 @@ export function useEsbuild({
 		jsxFactory,
 		jsxFragment,
 		serveAssetsFromWorker,
+		formatErrorsInDev,
 		rules,
 		tsconfig,
 		exit,

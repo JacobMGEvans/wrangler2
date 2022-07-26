@@ -383,6 +383,7 @@ See https://developers.cloudflare.com/workers/platform/compatibility-dates for m
 					{
 						serveAssetsFromWorker:
 							!props.isWorkersSite && Boolean(props.assetPaths),
+						formatErrorsInDev: false,
 						jsxFactory,
 						jsxFragment,
 						rules: props.rules,

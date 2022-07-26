@@ -166,6 +166,10 @@ function DevSession(props: DevSessionProps) {
 		serveAssetsFromWorker: Boolean(
 			props.assetPaths && !props.isWorkersSite && props.local
 		),
+		// We use an env var here because we don't actually
+		// want to expose this to the user. It's only used internally to
+		// experiment with middleware as a teaching exercise.
+		formatErrorsInDev: process.env.FORMAT_WRANGLER_ERRORS === "true",
 		tsconfig: props.tsconfig,
 		minify: props.minify,
 		nodeCompat: props.nodeCompat,
