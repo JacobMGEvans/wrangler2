@@ -1,5 +1,19 @@
 # wrangler
 
+## 2.0.24
+
+### Patch Changes
+
+- [#1534](https://github.com/cloudflare/wrangler2/pull/1534) [`d3ae16cf`](https://github.com/cloudflare/wrangler2/commit/d3ae16cfb8e13f0e6e5f710b3cb03e46ecb7bf7a) Thanks [@cameron-robey](https://github.com/cameron-robey)! - feat: publish full url on `wrangler publish` for workers.dev workers
+
+  When the url is printed out on `wrangler publish`, the full url is printed out so that it can be accessed from the terminal easily by doing cmd+click. Implemented only for workers.dev workers.
+
+  Resolves https://github.com/cloudflare/wrangler2/issues/1530
+
+* [#1539](https://github.com/cloudflare/wrangler2/pull/1539) [`95d0f863`](https://github.com/cloudflare/wrangler2/commit/95d0f8635e62e76d29718fac16bfa776b4b4ae02) Thanks [@threepointone](https://github.com/threepointone)! - fix: export durable objects correctly when using `--assets`
+
+  The facade for static assets doesn't export any exports from the entry point, meaning Durable Objects will fail. This fix adds all exports to the facade's exports.
+
 ## 2.0.23
 
 ### Patch Changes
