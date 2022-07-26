@@ -8,6 +8,7 @@ import { findWranglerToml, printBindings, readConfig } from "./config";
 import Dev from "./dev/dev";
 import { getVarsForDev } from "./dev/dev-vars";
 
+import { implementation } from "./dev/no-react";
 import { getEntry } from "./entry";
 import { logger } from "./logger";
 import * as metrics from "./metrics";
@@ -617,7 +618,8 @@ export async function startApiDev(args: StartDevOptions) {
 				config = readConfig(configPath, args);
 				if (config.configPath) {
 					logger.log(`${path.basename(config.configPath)} changed...`);
-					rerender(await getDevReactElement(config));
+					//TODO: @rozenmd: re-run generateBundle etc here
+					// rerender(await getDevReactElement(config));
 				}
 			});
 		}
@@ -786,7 +788,7 @@ export async function startApiDev(args: StartDevOptions) {
 		const getInspectorPort = memoizeGetPort(DEFAULT_INSPECTOR_PORT);
 
 		// eslint-disable-next-line no-inner-declarations
-		async function getDevReactElement(configParam: Config) {
+		async function runReactlessImplementation(configParam: Config) {
 			// now log all available bindings into the terminal
 			const bindings = await getBindings(configParam);
 			// mask anything that was overridden in .dev.vars
@@ -815,69 +817,67 @@ export async function startApiDev(args: StartDevOptions) {
 							args.siteExclude
 					  );
 
-			return (
-				<Dev
-					name={getScriptName({ name: args.name, env: args.env }, config)}
-					noBundle={!(args.bundle ?? !config.no_bundle)}
-					entry={entry}
-					env={args.env}
-					zone={zoneId}
-					host={host}
-					routes={routes}
-					rules={getRules(config)}
-					legacyEnv={isLegacyEnv(config)}
-					minify={args.minify ?? config.minify}
-					nodeCompat={nodeCompat}
-					build={config.build || {}}
-					define={config.define}
-					initialMode={args.local ? "local" : "remote"}
-					jsxFactory={args["jsx-factory"] || config.jsx_factory}
-					jsxFragment={args["jsx-fragment"] || config.jsx_fragment}
-					tsconfig={args.tsconfig ?? config.tsconfig}
-					upstreamProtocol={upstreamProtocol}
-					localProtocol={args.localProtocol || config.dev.local_protocol}
-					localUpstream={args["local-upstream"] || host}
-					enableLocalPersistence={
-						args.experimentalEnableLocalPersistence || false
-					}
-					liveReload={args.liveReload || false}
-					accountId={config.account_id || getAccountFromCache()?.id}
-					assetPaths={assetPaths}
-					port={args.port || config.dev.port || (await getLocalPort())}
-					ip={args.ip || config.dev.ip}
-					inspectorPort={
-						args["inspector-port"] ||
-						config.dev.inspector_port ||
-						(await getInspectorPort())
-					}
-					isWorkersSite={Boolean(args.site || config.site)}
-					compatibilityDate={getDevCompatibilityDate(
-						config,
-						args["compatibility-date"]
-					)}
-					compatibilityFlags={
-						args["compatibility-flags"] || config.compatibility_flags
-					}
-					usageModel={config.usage_model}
-					bindings={bindings}
-					crons={config.triggers.crons}
-					logLevel={args.logLevel}
-					logPrefix={args.logPrefix}
-					onReady={args.onReady}
-					inspect={args.inspect ?? true}
-					showInteractiveDevSession={args.showInteractiveDevSession}
-					forceLocal={args.forceLocal}
-					enablePagesAssetsServiceBinding={args.enablePagesAssetsServiceBinding}
-				/>
-			);
+			await implementation({
+				name: getScriptName({ name: args.name, env: args.env }, config),
+				noBundle: !(args.bundle ?? !config.no_bundle),
+				entry: entry,
+				env: args.env,
+				zone: zoneId,
+				host: host,
+				routes: routes,
+				rules: getRules(config),
+				legacyEnv: isLegacyEnv(config),
+				minify: args.minify ?? config.minify,
+				nodeCompat: nodeCompat,
+				build: config.build || {},
+				define: config.define,
+				initialMode: args.local ? "local" : "remote",
+				jsxFactory: args["jsx-factory"] || config.jsx_factory,
+				jsxFragment: args["jsx-fragment"] || config.jsx_fragment,
+				tsconfig: args.tsconfig ?? config.tsconfig,
+				upstreamProtocol: upstreamProtocol,
+				localProtocol: args.localProtocol || config.dev.local_protocol,
+				localUpstream: args["local-upstream"] || host,
+				enableLocalPersistence:
+					args.experimentalEnableLocalPersistence || false,
+				liveReload: args.liveReload || false,
+				accountId: config.account_id || getAccountFromCache()?.id,
+				assetPaths: assetPaths,
+				port: args.port || config.dev.port || (await getLocalPort()),
+				ip: args.ip || config.dev.ip,
+				inspectorPort:
+					args["inspector-port"] ||
+					config.dev.inspector_port ||
+					(await getInspectorPort()),
+				isWorkersSite: Boolean(args.site || config.site),
+				compatibilityDate: getDevCompatibilityDate(
+					config,
+					args["compatibility-date"]
+				),
+				compatibilityFlags:
+					args["compatibility-flags"] || config.compatibility_flags,
+				usageModel: config.usage_model,
+				bindings: bindings,
+				crons: config.triggers.crons,
+				logLevel: args.logLevel,
+				logPrefix: args.logPrefix,
+				onReady: args.onReady,
+				inspect: args.inspect ?? true,
+				showInteractiveDevSession: args.showInteractiveDevSession,
+				forceLocal: args.forceLocal,
+				enablePagesAssetsServiceBinding: args.enablePagesAssetsServiceBinding,
+				local: true,
+			});
 		}
-		const devReactElement = render(await getDevReactElement(config));
-		rerender = devReactElement.rerender;
+
+		await runReactlessImplementation(config);
+		//TODO: @rozenmd: provide a way to re-run generateBundle etc here
+		// rerender = devReactElement.rerender;
 		return {
-			devReactElement,
+			// devReactElement,
 			watcher,
 			stop: async () => {
-				devReactElement.unmount();
+				// devReactElement.unmount();
 				await watcher?.close();
 			},
 			fetch: async (init?: RequestInit) => {

@@ -79,7 +79,8 @@ export async function unstable_dev(
 			resolve({
 				stop: devServer.stop,
 				fetch: devServer.fetch,
-				waitUntilExit: devServer.devReactElement.waitUntilExit,
+				//TODO: @rozenmd to figure out what this should do
+				waitUntilExit: async () => new Promise(() => {}),
 			});
 		});
 	});
